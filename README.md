@@ -40,6 +40,31 @@ The database contains three related tables:
 * service_date
 
 It also contains an **ER Diagram** (see attached screenshot).
+## Join queries 
+## INNER JOIN
+SELECT p.patient_name, s.service_name, t.amount
+FROM patients p
+INNER JOIN transactions t ON p.patient_id = t.patient_id
+INNER JOIN services s ON t.service_id = s.service_id;
+
+## LEFT JOIN
+SELECT p.patient_name, t.amount
+FROM patients p
+LEFT JOIN transactions t ON p.patient_id = t.patient_id;
+
+## RIGHT JOIN
+SELECT s.service_name, t.amount
+FROM transactions t
+RIGHT JOIN services s ON t.service_id = s.service_id;
+
+## FULL OUTER JOIN (MySQL alternative)
+SELECT p.patient_name, t.amount
+FROM patients p
+LEFT JOIN transactions t ON p.patient_id = t.patient_id
+UNION
+SELECT p.patient_name, t.amount
+FROM patients p
+RIGHT JOIN transactions t ON p.patient_id = t.patient_id;
 
 
 
@@ -53,7 +78,7 @@ Interpretation: Helps identify which services are most popular among patients.
 Runs monthly billing totals.
 Interpretation: Shows cumulative billing per month, helping track overall revenue and patient service usage.
 
-3. LAG()/LEAD():
+3. LAG()
 Month-over-month growth.
 Interpretation: Helps see if patient visits or billing amounts are increasing or decreasing month-to-month.
 
@@ -64,6 +89,54 @@ Interpretation: Segments patients into quartiles based on spending or service us
 5. AVG() OVER():
 Three-month moving averages.
 Interpretation: Smooths short-term fluctuations in service usage or billing to reveal underlying trends.
+
+## WINDOW FUNCTIONS QUERIES 
+
+
+## RANK patients  
+SELECT 
+    p.patient_name,
+    SUM(t.amount) AS total_spent,
+    RANK() OVER (ORDER BY SUM(t.amount) DESC) AS spending_rank
+FROM patients p
+JOIN transactions t ON p.patient_id = t.patient_id
+GROUP BY p.patient_name;
+
+## SUM
+SELECT
+    transaction_id,
+    transaction_date,
+    amount,
+    SUM(amount) OVER (ORDER BY transaction_date) AS running_total
+FROM transactions;
+
+## LAG 
+SELECT
+    transaction_id,
+    transaction_date,
+    amount,
+    LAG(amount) OVER (ORDER BY transaction_date) AS previous_amount,
+    LEAD(amount) OVER (ORDER BY transaction_date) AS next_amount
+FROM transactions;
+
+## NTILE
+SELECT
+    patient_name,
+    SUM(amount) AS total_spent,
+    NTILE(2) OVER (ORDER BY SUM(amount) DESC) AS spending_group
+FROM patients p
+JOIN transactions t ON p.patient_id = t.patient_id
+GROUP BY patient_name;
+
+## AVG
+SELECT
+    transaction_date,
+    amount,
+    AVG(amount) OVER (
+        ORDER BY transaction_date
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+    ) AS moving_average
+FROM transactions;
 
 
 
