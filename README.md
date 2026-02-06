@@ -66,6 +66,16 @@ SELECT p.patient_name, t.amount
 FROM patients p
 RIGHT JOIN transactions t ON p.patient_id = t.patient_id;
 
+## SELF JOIN
+
+SELECT
+    p1.patient_name AS patient_1,
+    p2.patient_name AS patient_2,
+    p1.region
+FROM patients p1
+JOIN patients p2
+    ON p1.region = p2.region
+    AND p1.patient_id <> p2.patient_id;
 
 
 ## Window Functions Implemented
