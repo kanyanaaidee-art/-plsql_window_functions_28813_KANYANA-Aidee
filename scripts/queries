@@ -1,0 +1,146 @@
+## Business Context
+A healthcare organization operating in the health industry, within the Health Services department, wants to analyze its patient records and billing data.
+## Data Challenge
+The health department records patient services and billing transactions but lacks clear insight into which health services are most used and how service usage changes over time. 
+## Expected Outcome
+The analysis will help the health department identify the most used health services, track service growth over time, and classify patients to improve service planning and resource allocation.
+## CREATE TABLES
+
+mysql> CREATE TABLE patients (
+    -> patient_id INT PRIMARY KEY,
+    -> patient_name VARCHAR(100),
+    -> region VARCHAR(50)
+    -> );
+
+mysql> CREATE TABLE services (
+    -> service_id INT PRIMARY KEY,
+    -> service_name VARCHAR(100),
+    -> cost DECIMAL(10,2)
+    -> );
+
+mysql> CREATE TABLE transactions (
+    -> transaction_id INT PRIMARY KEY,
+    -> patient_id INT,
+    -> service_id INT,
+    -> transaction_date DATE,
+    -> amount DECIMAL(10,2),
+    -> FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
+    -> FOREIGN KEY (service_id) REFERENCES services(service_id)
+    -> );
+
+## INSERT SAMPLE DATA
+
+mysql> INSERT INTO patients VALUES
+    -> (1, 'Alice', 'North'),
+    -> (2, 'Bob', 'South'),
+    -> (3, 'Charlie', 'East'),
+    -> (4, 'Diana', 'West'),
+    -> (5, 'Eve', 'North');
+
+mysql> INSERT INTO services VALUES
+    -> (1, 'Consultation', 50.00),
+    -> (2, 'X-Ray', 120.00),
+    -> (3, 'Surgery', 500.00),
+    -> (4, 'Physiotherapy', 80.00),
+    -> (5, 'Dental Checkup', 250.00);
+
+mysql> INSERT INTO transactions VALUES
+    -> (1, 1, 1, '2025-01-10', 50.00),
+    -> (2, 1, 2, '2025-01-15', 120.00),
+    -> (3, 2, 1, '2025-02-05', 50.00),
+    -> (4, 3, 3, '2025-02-20', 500.00),
+    -> (5, 4, 4, '2025-03-10', 80.00);
+
+## JOIN QUERIES
+
+1. INNER JOIN: Retrieve valid patient transactions
+mysql> SELECT p.patient_name, s.service_name, t.amount
+    -> FROM patients p
+    -> INNER JOIN transactions t ON p.patient_id = t.patient_id
+    -> INNER JOIN services s ON t.service_id = s.service_id;
+Business Interpretation:
+ This query identifies all transactions where both patient and service records exist.
+ It helps the health department see which patients are actively using services and how much revenue each transaction generates.
+ 2. LEFT JOIN: Identify patients with no transactions
+mysql> SELECT p.patient_name, t.amount
+    -> FROM patients p
+    -> LEFT JOIN transactions t ON p.patient_id = t.patient_id;
+ Business Interpretation:
+ This query shows all patients, including those who have never made any transactions.
+ It helps the department detect inactive or newly registered patients for targeted outreach.
+
+3. RIGHT JOIN: Detect services with no usage
+mysql> SELECT s.service_name, t.amount
+    -> FROM transactions t
+    -> RIGHT JOIN services s ON t.service_id = s.service_id;
+ Business Interpretation:
+ This query lists all services and highlights those that have not been used by any patient.
+ It assists management in identifying underutilized services for review or promotion.
+
+4. FULL OUTER JOIN
+mysql> SELECT p.patient_name, s.service_name
+    -> FROM patients p
+    -> LEFT JOIN transactions t ON p.patient_id = t.patient_id
+    -> LEFT JOIN services s ON t.service_id = s.service_id
+    -> UNION
+    -> SELECT p.patient_name, s.service_name
+    -> FROM services s
+    -> LEFT JOIN transactions t ON s.service_id = t.service_id
+    -> LEFT JOIN patients p ON t.patient_id = p.patient_id;
+ Business Interpretation:
+ This query combines all patients and all services, including unmatched records.
+It provides a full overview to compare patient activity and service utilization comprehensively.
+
+ 5. SELF JOIN: Compare patients within the same region
+mysql> SELECT p1.patient_name AS patient_1, p2.patient_name AS patient_2, p1.region
+    -> FROM patients p1
+    -> JOIN patients p2 ON p1.region = p2.region AND p1.patient_id <> p2.patient_id;
+ Business Interpretation:
+ This query pairs patients from the same region, helping to analyze regional demographics.
+ It can guide region-specific healthcare campaigns and resource allocation.
+
+## WINDOW FUNCTIONS
+ 1. RANK(): Top patients by spending
+mysql> SELECT p.patient_name, SUM(t.amount) AS total_spent,
+    -> RANK() OVER (ORDER BY SUM(t.amount) DESC) AS rank
+    -> FROM patients p
+    -> JOIN transactions t ON p.patient_id = t.patient_id
+    -> GROUP BY p.patient_name;
+ Business Interpretation:
+ Ranks patients based on total spending.
+ Helps the department identify high-value patients and prioritize them for loyalty programs.
+
+ 2. SUM() OVER(): Running total
+mysql> SELECT transaction_id, transaction_date, amount,
+    -> SUM(amount) OVER (ORDER BY transaction_date) AS running_total
+    -> FROM transactions;
+ Business Interpretation:
+ Calculates cumulative revenue over time.
+ Assists in monitoring monthly revenue growth and spotting trends.
+
+3. LAG() / LEAD(): Month-over-month comparison
+mysql> SELECT transaction_id, transaction_date, amount,
+    -> LAG(amount) OVER (ORDER BY transaction_date) AS previous_amount,
+    -> LEAD(amount) OVER (ORDER BY transaction_date) AS next_amount
+    -> FROM transactions;
+ Business Interpretation:
+ Compares each transaction with previous and next transactions.
+ Supports understanding of revenue fluctuations and seasonal trends.
+
+ 4. NTILE(): Patient segmentation
+mysql> SELECT p.patient_name, SUM(t.amount) AS total_spent,
+    -> NTILE(4) OVER (ORDER BY SUM(t.amount) DESC) AS quartile
+    -> FROM patients p
+    -> JOIN transactions t ON p.patient_id = t.patient_id
+    -> GROUP BY p.patient_name;
+ Business Interpretation:
+ Divides patients into four spending quartiles.
+ Helps identify top spenders for targeted programs and low-utilization patients for engagement strategies.
+
+5. AVG() OVER(): Three-transaction moving average
+mysql> SELECT transaction_date, amount,
+    -> AVG(amount) OVER (ORDER BY transaction_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS moving_avg
+    -> FROM transactions;
+ Business Interpretation:
+ Computes the moving average of transaction amounts over three transactions.
+ Smooths short-term fluctuations and shows underlying trends in service usage.
