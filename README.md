@@ -168,14 +168,6 @@ FROM transactions;
 * Promote lesser-used services to balance workload and improve service coverage.
 * Monitor patient trends to optimize scheduling and inventory of medical supplies.
 
-## Documentation
-## Database Design
-The database consists of three main tables:
-* Patients: Stores patient identification and regional information.
-* Services: Stores healthcare service details and costs.
-* Transactions: Stores records of services provided to patients and billing amounts.
-* Primary and foreign keys were used to maintain data integrity and relationships between tables.
-
 ## References
 
 1. Oracle SQL Documentation: [https://docs.oracle.com/en/database/oracle/oracle-database/](https://docs.oracle.com/en/database/oracle/oracle-database/)
