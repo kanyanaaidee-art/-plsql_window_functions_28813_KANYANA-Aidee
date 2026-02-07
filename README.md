@@ -170,8 +170,9 @@ FROM transactions;
 
 ## References
 
-1. Oracle SQL Documentation: [https://docs.oracle.com/en/database/oracle/oracle-database/](https://docs.oracle.com/en/database/oracle/oracle-database/)
-2. SQL Window Functions Tutorial: [https://www.w3schools.com/sql/sql_func_over.asp](https://www.w3schools.com/sql/sql_func_over.asp)
+1.MySQL Official Documentation: https://dev.mysql.com/doc/
+2.MySQL Tutorial – W3Schools
+https://www.w3schools.com/mysql/
 3. DB Design & ER Diagram Guide: [https://dbdiagram.io](https://dbdiagram.io)
 4. Provost, F., & Fawcett, T. (2013) - Data Science for Business. O'Reilly Media.
 
