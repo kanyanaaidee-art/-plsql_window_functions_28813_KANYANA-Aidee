@@ -177,5 +177,4 @@ https://www.w3schools.com/mysql/
 4. Provost, F., & Fawcett, T. (2013) - Data Science for Business. O'Reilly Media.
 
 Integrity Statement:
-
-> “All sources were properly cited. Implementations and analysis represent original work. No AI-generated content was copied without attribution or adaptation.”
+“All sources were properly cited. Implementations and analysis represent original work. No AI-generated content was copied without attribution or adaptation.”
